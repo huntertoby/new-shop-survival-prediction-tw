@@ -240,3 +240,48 @@ select:focus {
     color: #9ca3af;
     text-align: right;
 }
+
+/* ===== Loading Overlay ===== */
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    backdrop-filter: blur(3px);
+}
+
+.loading-box {
+    background: #ffffff;
+    padding: 14px 18px;
+    border-radius: 14px;
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.25),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid #e5e7eb;
+    border-top-color: #2563eb;
+    animation: spin 0.75s linear infinite;
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

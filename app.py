@@ -31,8 +31,8 @@ def api_search():
     address = str(data.get("address", "")).strip()
     radius_str = str(data.get("radius_m", "500")).strip()
     total_asset = data.get("total_asset")
-    industry_value = data.get("industry")  # 例如 "industry_飲料店業"
-
+    industry_value = data.get("industry")
+    model_year_raw = data.get("model_year", 5)
     if not address:
         return jsonify({"ok": False, "error": "請先輸入地址。"}), 400
 
@@ -47,6 +47,14 @@ def api_search():
     # 行業別檢查
     if not industry_value:
         return jsonify({"ok": False, "error": "請選擇行業別。"}), 400
+
+    try:
+        model_year = int(model_year_raw)
+    except Exception:
+        model_year = 5
+
+    if model_year not in (3, 5, 7, 10, 15):
+        model_year = 5
 
     # 半徑處理
     try:
@@ -102,7 +110,7 @@ def api_search():
     }
 
     # 4) 丟進生存模型做預測
-    surv = survival_predict.predict_new_shop(new_shop)
+    surv = survival_predict.predict_new_shop(new_shop, model_year=model_year)
 
     # 轉成給前端好懂的文字
     label = "✅ 建議投資 (存活)" if surv["prediction"] == 1 else "❌ 風險過高 (倒閉)"

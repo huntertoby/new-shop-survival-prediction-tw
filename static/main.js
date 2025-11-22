@@ -13,6 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const predictSection = document.getElementById("predict-section");
   const predictResult = document.getElementById("predict-result");
 
+  const loadingOverlay = document.getElementById("loading-overlay");
+
+  function setLoading(isLoading) {
+    if (!loadingOverlay) return;
+    loadingOverlay.style.display = isLoading ? "flex" : "none";
+  }
+
   function showError(msg) {
     errorBox.style.display = "block";
     errorBox.textContent = msg;
@@ -91,6 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      setLoading(true);  // 顯示轉圈圈
+
       const resp = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,6 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       showError("無法連線到伺服器，請稍後再試。");
+    } finally {
+      setLoading(false); // 關閉轉圈圈
     }
   });
 });
