@@ -38,18 +38,21 @@ def _guess_tw_city_district(addr: str) -> Dict[str, Optional[str]]:
         return {"city": None, "district": None}
 
     addr = addr.strip()
+    # 把開頭的 3~5 位數郵遞區號拿掉，例如「100臺北市…」→「臺北市…」
+    addr = re.sub(r"^\s*\d{3,5}", "", addr)
 
     city_found = None
+    rest = addr
     for city in TW_CITIES:
         if addr.startswith(city):
             city_found = city
-            rest = addr[len(city):]  # 去掉縣市，剩下後面
+            rest = addr[len(city):]  # 去掉縣市，剩後面
             break
 
     if city_found is None:
         return {"city": None, "district": None}
 
-    # 後半段找「○○市／○○區／○○鎮／○○鄉／○○村／○○里」之類
+    # 後半段找「○○市／○○區／○○鎮／○○鄉／○○村／○○里」
     m = re.match(r"(.+?(市|區|鎮|鄉|村|里))", rest)
     if not m:
         return {"city": city_found, "district": None}
@@ -57,9 +60,7 @@ def _guess_tw_city_district(addr: str) -> Dict[str, Optional[str]]:
     district = m.group(1)
     return {"city": city_found, "district": district}
 
-
 def geocode(address: str, timeout: float = 10.0) -> Optional[Dict[str, Any]]:
-    """給定地址，回傳 {'lat','lon','match_addr','score','city','district'}；找不到回傳 None。"""
     if not address:
         return None
 
@@ -67,7 +68,6 @@ def geocode(address: str, timeout: float = 10.0) -> Optional[Dict[str, Any]]:
         "SingleLine": address,
         "f": "json",
         "outSR": '{"wkid":4326}',
-        # 把 City / Region / Subregion 都拿回來，比較有機會直接用官方欄位
         "outFields": "Addr_type,Match_addr,StAddr,City,Region,Subregion,Country",
         "maxLocations": 6,
     }
@@ -91,22 +91,10 @@ def geocode(address: str, timeout: float = 10.0) -> Optional[Dict[str, Any]]:
         )
         score = best.get("score", 0)
 
-        # 1) 先用 ArcGIS 提供的 City / Subregion
-        city_attr = attrs.get("City")
-        subregion_attr = attrs.get("Subregion")  # 有些國家會把「行政區」丟這
-        # Region 通常是省份或較大區域，例如 "Taiwan" / "Taipei"
-        region_attr = attrs.get("Region")
-
-        # 2) 針對台灣，再用中文地址字串拆一次（match_addr 優先，其次原始輸入）
+        # 只會有台灣地址 → 一律用中文地址來拆縣市／行政區
         guess = _guess_tw_city_district(match_addr or address)
-        city_guess = guess["city"]
-        district_guess = guess["district"]
-
-        # 3) 最後決定 city / district：
-        #    - city：ArcGIS 的 City 優先；沒有就用我們猜的 city_guess
-        #    - district：ArcGIS 的 Subregion 優先；沒有就用 district_guess
-        city_final = city_attr or city_guess
-        district_final = subregion_attr or district_guess
+        city_final = guess["city"]      # 例如「臺北市」
+        district_final = guess["district"]  # 例如「中正區」
 
         return {
             "lat": loc.get("y"),
@@ -115,17 +103,13 @@ def geocode(address: str, timeout: float = 10.0) -> Optional[Dict[str, Any]]:
             "score": score,
             "city": city_final,
             "district": district_final,
-            # 想 debug 的時候可以看這些原始欄位
-            "raw_attrs": {
-                "City": city_attr,
-                "Subregion": subregion_attr,
-                "Region": region_attr,
-                "Country": attrs.get("Country"),
-            },
+            "raw_attrs": attrs,  # 若要 debug 還是留著
         }
     except Exception as e:
         sys.stderr.write(f"[ERROR] geocode failed for '{address}': {e}\n")
         return None
+
+
 
 
 def main() -> int:
