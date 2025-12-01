@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorBox = document.getElementById("error-box");
   const infoBox = document.getElementById("info-box");
 
+  // ✅ 新增：POI 統計區
+  const poiBox = document.getElementById("poi-box");
+  const poiGrid = document.getElementById("poi-grid");
+
   const predictSection = document.getElementById("predict-section");
   const predictResult = document.getElementById("predict-result");
 
@@ -34,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
     infoBox.style.display = "none";
     infoBox.innerHTML = "";
 
+    // ✅ 新增：清 POI
+    if (poiBox) poiBox.style.display = "none";
+    if (poiGrid) poiGrid.innerHTML = "";
+
     predictSection.style.display = "none";
     predictResult.innerHTML = "";
   }
@@ -56,6 +64,33 @@ document.addEventListener("DOMContentLoaded", () => {
       <div>座標：lat = ${geo.lat}, lng = ${geo.lng}</div>
       <div>搜尋半徑：${data.radius_m} 公尺</div>
     `;
+
+    // ✅ 新增：周邊 POI 統計（來自 data.result.summary）
+    const summary = data?.result?.summary || null;
+    if (poiBox && poiGrid && summary) {
+      const items = [
+        { key: "fuel", label: "加油站" },
+        { key: "transit", label: "大眾運輸" },
+        { key: "school", label: "校園" },
+        { key: "parking", label: "停車場" },
+        { key: "scenic", label: "景點" },
+        { key: "cinema", label: "電影院" },
+      ];
+
+      poiGrid.innerHTML = items
+        .map(({ key, label }) => {
+          const v = Number(summary[key] ?? 0);
+          return `
+            <div class="poi-item">
+              <div class="poi-label">${label}</div>
+              <div class="poi-count">${v}</div>
+            </div>
+          `;
+        })
+        .join("");
+
+      poiBox.style.display = "block";
+    }
 
     if (data.survival) {
       const s = data.survival;
@@ -98,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      setLoading(true);  // 顯示轉圈圈
+      setLoading(true); // 顯示轉圈圈
 
       const resp = await fetch("/api/search", {
         method: "POST",

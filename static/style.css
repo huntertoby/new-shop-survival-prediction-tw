@@ -285,3 +285,56 @@ select:focus {
         transform: rotate(360deg);
     }
 }
+
+/* ===== POI 統計區 ===== */
+
+.poi-box {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.poi-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.poi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+@media (max-width: 600px) {
+    .poi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.poi-item {
+    padding: 10px 10px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.poi-label {
+    font-size: 0.9rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.poi-count {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+}
