@@ -66,10 +66,10 @@ flowchart LR
 ├─ geo/
 │  ├─ geocode_arcgis.py
 │  ├─ osm_get.py
-│  └─ osm_poi.sqlite3               # 你的 OSM POI 資料庫（需自行放入）
+│  └─ osm_poi.sqlite3              
 ├─ models/
 │  ├─ survival_predict.py
-│  ├─ survival_model_3years.pkl     # 需自行放入
+│  ├─ survival_model_3years.pkl     
 │  ├─ survival_model_5years.pkl
 │  ├─ survival_model_7years.pkl
 │  ├─ survival_model_10years.pkl
